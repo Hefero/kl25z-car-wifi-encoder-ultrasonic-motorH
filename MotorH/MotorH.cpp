@@ -267,17 +267,23 @@ void motorH::countDirIrq(void)
     pulsoDir++;    
 }
 
-int motorH::getSonicDistance(void)
+int motorH::getSonicDistance(void) // retorna o menor valor do array
 {
-    int debounced = 0;
-    for (int i=0; i < SONIC_DISTANCE_DEBOUNCE_SIZE; i++)
-    {
-        debounced += sonicDistanceDebouncer[i];
-    }
-    return static_cast<int>(debounced/SONIC_DISTANCE_DEBOUNCE_SIZE);
+    return minValue(sonicDistanceDebouncer);
 }
 
 void motorH::debug(void)  // debug function
 {
     _serial.printf("\n\resq:%d dir%d dist:%dmm",pulsoEsq,pulsoDir,getSonicDistance());
+}
+
+int motorH::minValue(int array[])
+{
+    int n = sizeof(array)/sizeof(array[0]);
+    int mini = INT_MAX;
+    for(int i=0; i<n; i++){
+        if(array[i]<mini)
+        mini = array[i];
+    }
+    return mini;
 }

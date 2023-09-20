@@ -31,6 +31,7 @@ class motorH
         int sonicDistanceDebounced;
         bool checkObstacle(void);
     private:
+        int minValue(int array[]);
         void countEsqIrq(void);
         void countDirIrq(void);
         void distIrq();
