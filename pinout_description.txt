@@ -1,0 +1,29 @@
+/*
+bluetooth:
+PTD2 mosi
+PTD3 miso
+PTC5 sck
+PTD0 csn
+PTD5 ce
+PTA13 irq
+
+motor a: (direita)
+PTD4 in1
+PTA12 in2
+
+motor b: (esquerda)
+PTA4 in3
+PTA5 in4
+
+encoder menor (direita):
+PTC1 d0 PTD6
+PTC2 a0
+
+encoder maior (esquerda):
+PTB3 a0
+PTB9 d0 PTD7 PTE1
+
+ultrassom: (only supported on ports A and D)
+echo  PTD1
+trigger PTA16
+*/
