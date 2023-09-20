@@ -24,9 +24,9 @@ void hasMessageTicker(){
 
 int main() {
     motor->stop();
-    debugTicker.attach(callback(motor,&motorH::debug),DEBUG_MSG_INTERVAL); //habilita debugger do Motor    
-    messageTicker.attach(callback(nrf24l01p,&my_nrf24l01p::checkMessage),HAS_MSG_INTERVAL);     
+    debugTicker.attach(callback(motor,&motorH::debug),DEBUG_MSG_INTERVAL); // habilita debugger do Motor    
+    messageTicker.attach(callback(nrf24l01p,&my_nrf24l01p::checkMessage),HAS_MSG_INTERVAL);  // checa mensagens a cada intervalo 
     while (1) {
-        hasMessageTicker();
+        hasMessageTicker(); // executa o comando caso haja mensagem nova recebida
     }
 }
