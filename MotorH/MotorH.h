@@ -4,7 +4,7 @@
 #include "mbed.h"
 #include "ultrasonic.h"
 
-
+#define SONIC_DISTANCE_DEBOUNCE_SIZE 5
 
 class motorH
 {
@@ -27,12 +27,15 @@ class motorH
         int getSonicDistance(void);
         void debug(void);
         bool moving = false;
-        bool obstacle = false;
         void bypass(void);
-    private:        
+        int sonicDistanceDebounced;
+        bool checkObstacle(void);
+    private:
         void countEsqIrq(void);
         void countDirIrq(void);
         void distIrq();
+        int debouceCounter = 0;
+        int sonicDistanceDebouncer[SONIC_DISTANCE_DEBOUNCE_SIZE] = { 0 };
         PwmOut _in1;
         PwmOut _in2;
         PwmOut _in3;

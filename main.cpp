@@ -4,7 +4,6 @@
 
 #define DEBUG_MSG_INTERVAL 5.0
 #define HAS_MSG_INTERVAL 0.01
-#define MAX_EXECUTION_TIME 60.0
 
 Serial pc(USBTX, USBRX);
 

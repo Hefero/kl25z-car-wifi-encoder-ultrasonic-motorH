@@ -1,5 +1,6 @@
 
 #include "MotorH.h"
+#include <cstdint>
 
 #define H_IN1 PTD4 // ponte H
 #define H_IN2 PTA12
@@ -16,6 +17,7 @@
 #define ECHO_PIN PTD1
 #define UPDATE_DIST_FREQ .1
 #define ULTRASOUND_TIMEOUT_S 1
+#define MINIMUN_OBSTACLE_DISTANCE 300
 
 #define LEFT_TURN_DISTANCE 99
 #define RIGHT_TURN_DISTANCE 99
@@ -24,45 +26,66 @@
 motorH::motorH(void):_in1(H_IN1),_in2(H_IN2),_in3(H_IN3),_in4(H_IN4)
     ,_encoderEsq(ENC_ESQ_PIN),_encoderDir(ENC_DIR_PIN)
     ,_mu(TRIGGER_PIN, ECHO_PIN, UPDATE_DIST_FREQ, ULTRASOUND_TIMEOUT_S, NULL)
-    ,_serial(USBTX, USBRX){
-    _in1.period(PWM_FREQ);
+    ,_serial(USBTX, USBRX)
+{
+    _in1.period(PWM_FREQ); // seta frequencia do pwm
     _in2.period(PWM_FREQ);
     _in3.period(PWM_FREQ);
     _in4.period(PWM_FREQ);
-    _mu.startUpdates();
-    _encoderEsq.rise(callback(this, &motorH::countEsqIrq)); //interrupção que checa distância
+    _mu.startUpdates(); // inicia medicao do ultrassom
+    _encoderEsq.rise(callback(this, &motorH::countEsqIrq)); // interrupção que atualiza encoder
     _encoderDir.rise(callback(this, &motorH::countDirIrq));
-    _tout.attach(callback(this,&motorH::distIrq),UPDATE_DIST_FREQ);
+    _tout.attach(callback(this,&motorH::distIrq),UPDATE_DIST_FREQ); // interrupção que atualiza distancia do ultrassom
 }
 
 void motorH::distIrq(void)
 {
-    if(this->getSonicDistance() < 150) { //obstáculo detectado
-        _serial.printf("\n\robstaculo detectado");
-        obstacle = true;
-        stop();
+    if (debouceCounter < SONIC_DISTANCE_DEBOUNCE_SIZE) // atualiza vetor das ultimas medições
+    {
+        sonicDistanceDebouncer[debouceCounter] = _mu.getCurrentDistance();
+        debouceCounter++;    
     }
     else
     {
-        obstacle = false;
+        debouceCounter = 0;
+    }
+    if (debouceCounter == SONIC_DISTANCE_DEBOUNCE_SIZE)
+    {
+        checkObstacle();
     }
 }
 
 void motorH::bypass(void)
 {
-    while (obstacle){
+    while (checkObstacle())
+    {
+        _serial.printf("\n\rrotina de desvio");
         stop();
     }
-    return;
+}
+
+bool motorH::checkObstacle(void)
+{
+    if(getSonicDistance() < MINIMUN_OBSTACLE_DISTANCE) // obstáculo detectado
+    {
+        _serial.printf("\n\robstaculo detectado");
+        return true;        
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void motorH::moveForward(int dist)
 {
     _serial.printf("\n\rmovendo para frente");
     pulsoDir = 0;
-    while(pulsoDir < dist){        
+    while(pulsoDir < dist)
+    {        
         moving = true;
-        if(obstacle){
+        if(checkObstacle())
+        {
             bypass();
         }
         motorDir(1, velDir); 
@@ -74,9 +97,11 @@ void motorH::moveBackwards(int dist)
 {
     _serial.printf("\n\rmovendo para tras");    
     pulsoDir = 0;
-    while(pulsoDir < dist){
+    while(pulsoDir < dist)
+    {
         moving = true;
-        if(obstacle){
+        if(checkObstacle())
+        {
             bypass();
         }
         motorDir(-1, velDir);
@@ -107,7 +132,8 @@ void motorH::turnLeft(void)
     while(pulsoDir < LEFT_TURN_DISTANCE)
     {
         moving = true;
-        if(obstacle){
+        if(checkObstacle())
+        {
             bypass();
         }
         motorDir(1, velDir);
@@ -123,7 +149,8 @@ void motorH::turnRight(void)
     while(pulsoDir < RIGHT_TURN_DISTANCE)
     {
         moving = true;
-        if(obstacle){
+        if(checkObstacle())
+        {
             bypass();
         }
         motorDir(-1, velDir);
@@ -134,7 +161,8 @@ void motorH::turnRight(void)
 
 void motorH::motorDir(int command, float duty)
 {
-    switch(command) {
+    switch(command) 
+    {
     case 0: // ponto morto
         _in1.write(0);
         _in2.write(0);
@@ -152,12 +180,12 @@ void motorH::motorDir(int command, float duty)
         _in2.write(1.0f);
         break;
     }
-
 }
 
 void motorH::motorEsq(int command, float duty)
 {
-    switch(command) {
+    switch(command) 
+    {
     case 0: // ponto morto
         _in3.write(0);
         _in4.write(0);
@@ -175,11 +203,10 @@ void motorH::motorEsq(int command, float duty)
         _in4.write(1.0f);
         break;
     }
-
 }
 
-void motorH::execute(char rxData[8]){
-
+void motorH::execute(char rxData[8])
+{
     int dist_x, dist_y;
     char dist_char_x[3], dist_char_y[3];
 
@@ -195,46 +222,62 @@ void motorH::execute(char rxData[8]){
     dist_y = atoi(dist_char_y);
 
     // frente esquerda
-    if (rxData[0] == '+' && rxData[4] == '+'){
+    if (rxData[0] == '+' && rxData[4] == '+')
+    {
         _serial.printf("\n\rcomando frente esquerda");
         if (dist_x > 0) {moveForward(dist_x);}
         if (dist_y > 0) {turnLeft();moveForward(dist_y);}
     }
     // frente direita
-    if (rxData[0] == '+' && rxData[4] == '-'){
+    if (rxData[0] == '+' && rxData[4] == '-')
+    {
         _serial.printf("\n\rcomando frente direita");
         if (dist_x > 0) {moveForward(dist_x);}
         if (dist_y > 0) {turnRight();moveForward(dist_y);}
     }
     // trás esquerda
-    if (rxData[0] == '-' && rxData[4] == '+'){
+    if (rxData[0] == '-' && rxData[4] == '+')
+    {
         _serial.printf("\n\rcomando trás esquerda");
         if (dist_x > 0) {moveBackwards(dist_x);}
         if (dist_y > 0) {turnLeft();moveForward(dist_y);}
     }
     // trás direita
-    if (rxData[0] == '-' && rxData[4] == '-'){
+    if (rxData[0] == '-' && rxData[4] == '-')
+    {
         _serial.printf("\n\rcomando trás direita");
         if (dist_x > 0) {moveBackwards(dist_x);}
         if (dist_y > 0) {turnRight();moveForward(dist_y);}
     }
     // 11111111 panic stop
-    if (rxData[0] == '1' && rxData[4] == '1'){
+    if (rxData[0] == '1' && rxData[4] == '1')
+    {
         _serial.printf("\n\rcomando parada imediata");
         stop();
     }    
 }
 
-void motorH::countEsqIrq(void) {    
+void motorH::countEsqIrq(void)
+{
     pulsoEsq++;
 }
 
-void motorH::countDirIrq(void) {
+void motorH::countDirIrq(void)
+{
     pulsoDir++;    
 }
 
-int motorH::getSonicDistance(void){ return _mu.getCurrentDistance(); }
+int motorH::getSonicDistance(void)
+{
+    int debounced = 0;
+    for (int i=0; i < SONIC_DISTANCE_DEBOUNCE_SIZE; i++)
+    {
+        debounced += sonicDistanceDebouncer[i];
+    }
+    return static_cast<int>(debounced/SONIC_DISTANCE_DEBOUNCE_SIZE);
+}
 
-void motorH::debug(void){ // debug function
-    _serial.printf("\n\resq:%d dir%d dist:%dmm",this->pulsoEsq,this->pulsoDir,this->getSonicDistance());
+void motorH::debug(void)  // debug function
+{
+    _serial.printf("\n\resq:%d dir%d dist:%dmm",pulsoEsq,pulsoDir,getSonicDistance());
 }
