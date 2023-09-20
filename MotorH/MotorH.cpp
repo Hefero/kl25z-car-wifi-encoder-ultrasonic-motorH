@@ -277,9 +277,9 @@ void motorH::debug(void)  // debug function
     _serial.printf("\n\resq:%d dir%d dist:%dmm",pulsoEsq,pulsoDir,getSonicDistance());
 }
 
-int motorH::minValue(int array[])
+int motorH::minValue(int array[SONIC_DISTANCE_DEBOUNCE_SIZE])
 {
-    int n = sizeof(array)/sizeof(array[0]);
+    int n = SONIC_DISTANCE_DEBOUNCE_SIZE;
     int mini = INT_MAX;
     for(int i=0; i<n; i++){
         if(array[i]<mini)
