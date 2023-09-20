@@ -10,7 +10,7 @@ Serial pc(USBTX, USBRX); // tx, rx
 
 motorH *motor = new motorH(); // classe de controle do motor
 
-my_nrf24l01p *nrf24l01p = new my_nrf24l01p(); // classe de controle do motor
+my_nrf24l01p *nrf24l01p = new my_nrf24l01p(); // classe de controle do receptor wifi
 
 DigitalOut greenLED(LED_GREEN);
 DigitalOut redLED(LED_RED);
