@@ -7,6 +7,8 @@
 #define CE PTD5
 #define IRQ PTA13
 
+#define RX_ADDRESS 12344321
+
 
 my_nrf24l01p::my_nrf24l01p(void):_my_nrf24l01p(PTD2, PTD3, PTC5, PTD0, PTD5, PTA13),_serial(USBTX, USBRX){
     
@@ -18,7 +20,7 @@ my_nrf24l01p::my_nrf24l01p(void):_my_nrf24l01p(PTD2, PTD3, PTC5, PTD0, PTD5, PTA
     _my_nrf24l01p.setTransferSize(TRANSFER_SIZE);
     
     _my_nrf24l01p.setReceiveMode();
-    _my_nrf24l01p.setRxAddress(12344321);
+    _my_nrf24l01p.setRxAddress(RX_ADDRESS);
     _my_nrf24l01p.enable();
 
     // Display the (default) setup of the nRF24L01+ chip

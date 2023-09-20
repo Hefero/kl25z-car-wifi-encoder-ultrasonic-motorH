@@ -1,5 +1,4 @@
 #include "mbed.h"
-#include "nRF24L01P.h"
 #include "my_nrf24l01p.h"
 #include "MotorH.h"
 
@@ -14,17 +13,17 @@ my_nrf24l01p *nrf24l01p = new my_nrf24l01p(); // classe de controle do receptor 
 
 DigitalOut greenLED(LED_GREEN);
 DigitalOut redLED(LED_RED);
-Ticker timer1;
-Ticker timer2;
+Ticker debugTicker;
+Timeout executionTimeout;
 
 int main() {
     motor->stop();
-    timer1.attach(callback(motor,&motorH::debug),DEBUG_MSG_INTERVAL); //habilita debugger do Motor
+    debugTicker.attach(callback(motor,&motorH::debug),DEBUG_MSG_INTERVAL); //habilita debugger do Motor
     
     while (1) {
         nrf24l01p->checkMessage();
         if(nrf24l01p->hasMessage){
-            //timer2.attach(callback(motor,&motorH::execute(nrf24l01p->rxData)),MAX_EXECUTION_TIME);
+            //executionTimeout.attach(callback(motor,&motorH::execute(nrf24l01p->rxData)),MAX_EXECUTION_TIME);
             motor->execute(nrf24l01p->rxData);
             nrf24l01p->hasMessage = false;
         }
