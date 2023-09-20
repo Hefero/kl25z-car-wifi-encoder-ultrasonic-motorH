@@ -14,20 +14,19 @@ my_nrf24l01p *nrf24l01p = new my_nrf24l01p(); // classe de controle do receptor 
 
 Ticker debugTicker;
 Ticker messageTicker;
-Timeout executionTicker;
 
 void hasMessageTicker(){
-    if(nrf24l01p->hasMessage){        
-        pc.printf("command received\n\r");
-        motor->execute(nrf24l01p->rxData);
+    if(nrf24l01p->hasMessage){
+        pc.printf("\n\rcommand received\n\r");
         nrf24l01p->hasMessage = false;
+        motor->execute(nrf24l01p->rxData);        
     }
 }
 
 int main() {
     motor->stop();
     debugTicker.attach(callback(motor,&motorH::debug),DEBUG_MSG_INTERVAL); //habilita debugger do Motor    
-    messageTicker.attach(callback(nrf24l01p,&my_nrf24l01p::checkMessage),HAS_MSG_INTERVAL);    
+    messageTicker.attach(callback(nrf24l01p,&my_nrf24l01p::checkMessage),HAS_MSG_INTERVAL);     
     while (1) {
         hasMessageTicker();
     }
