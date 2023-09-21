@@ -4,7 +4,7 @@
 #include "mbed.h"
 #include "ultrasonic.h"
 
-#define SONIC_DISTANCE_DEBOUNCE_SIZE 5
+#define SONIC_DISTANCE_DEBOUNCE_SIZE 15
 
 class motorH
 {

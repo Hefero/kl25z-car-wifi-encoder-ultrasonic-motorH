@@ -15,7 +15,7 @@
 
 #define TRIGGER_PIN PTA16 // ultrassom
 #define ECHO_PIN PTD1
-#define UPDATE_DIST_FREQ .1
+#define UPDATE_DIST_FREQ .01
 #define ULTRASOUND_TIMEOUT_S 1
 #define MINIMUN_OBSTACLE_DISTANCE 300
 
@@ -60,7 +60,7 @@ void motorH::bypass(void)
     while (checkObstacle())
     {
         _serial.printf("\n\rrotina de desvio");
-        stop();
+        hardStop();
     }
 }
 
