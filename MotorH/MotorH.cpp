@@ -7,8 +7,8 @@
 #define H_IN3 PTA4
 #define H_IN4 PTA5
 #define PWM_FREQ 0.01f //frequencia do pwn 1kHz
-#define velDir 0.45
-#define velEsq 0.55
+#define velDir 0.00568f
+#define velEsq 0.0068f
 
 #define ENC_ESQ_PIN PTD7 // encoders
 #define ENC_DIR_PIN PTD6
@@ -19,8 +19,8 @@
 #define ULTRASOUND_TIMEOUT_S 1
 #define MINIMUN_OBSTACLE_DISTANCE 300
 
-#define LEFT_TURN_DISTANCE 99
-#define RIGHT_TURN_DISTANCE 99
+#define LEFT_TURN_DISTANCE 10
+#define RIGHT_TURN_DISTANCE 10
 
 
 motorH::motorH(void):_in1(H_IN1),_in2(H_IN2),_in3(H_IN3),_in4(H_IN4)
@@ -57,11 +57,16 @@ void motorH::distIrq(void)
 
 void motorH::bypass(void)
 {
-    while (checkObstacle())
-    {
-        _serial.printf("\n\rrotina de desvio");
-        hardStop();
-    }
+    bypassing = true;
+    _serial.printf("\n\rrotina de desvio");
+    turnRight();
+    moveForward(50);
+    turnLeft();
+    moveForward(75);
+    turnLeft();
+    moveForward(50);
+    turnRight();
+    bypassing = false; 
 }
 
 bool motorH::checkObstacle(void)
@@ -84,7 +89,7 @@ void motorH::moveForward(int dist)
     while(pulsoDir < dist)
     {        
         moving = true;
-        if(checkObstacle())
+        if(checkObstacle() && bypassing == false)
         {
             bypass();
         }
@@ -100,7 +105,7 @@ void motorH::moveBackwards(int dist)
     while(pulsoDir < dist)
     {
         moving = true;
-        if(checkObstacle())
+        if(checkObstacle() && bypassing == false)
         {
             bypass();
         }
@@ -127,36 +132,36 @@ void motorH::hardStop(void)
 
 void motorH::turnLeft(void)
 {
+    stop();
+    wait(1);
     _serial.printf("\n\rvirar para esquerda");
     pulsoDir = 0;
     while(pulsoDir < LEFT_TURN_DISTANCE)
     {
         moving = true;
-        if(checkObstacle())
-        {
-            bypass();
-        }
+
         motorDir(1, velDir);
         motorEsq(-1, velEsq);
     }
     stop();
+    wait(1);
 }
 
 void motorH::turnRight(void)
 {
+    stop();
+    wait(1);
     _serial.printf("\n\rvirar para direita");
     pulsoDir = 0;
     while(pulsoDir < RIGHT_TURN_DISTANCE)
     {
         moving = true;
-        if(checkObstacle())
-        {
-            bypass();
-        }
+
         motorDir(-1, velDir);
         motorEsq(1, velEsq);
     }
     stop();
+    wait(1);
 }   
 
 void motorH::motorDir(int command, float duty)
@@ -214,9 +219,9 @@ void motorH::execute(char rxData[8])
     dist_char_x[1] = rxData[2];
     dist_char_x[2] = rxData[3];
 
-    dist_char_y[0] = rxData[1];
-    dist_char_y[1] = rxData[2];
-    dist_char_y[2] = rxData[3];
+    dist_char_y[0] = rxData[5];
+    dist_char_y[1] = rxData[6];
+    dist_char_y[2] = rxData[7];
 
     dist_x = atoi(dist_char_x);
     dist_y = atoi(dist_char_y);

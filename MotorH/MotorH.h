@@ -34,6 +34,7 @@ class motorH
         int minValue(int array[SONIC_DISTANCE_DEBOUNCE_SIZE]);
         void countEsqIrq(void);
         void countDirIrq(void);
+        bool bypassing = false;
         void distIrq();
         int debouceCounter = 0;
         int sonicDistanceDebouncer[SONIC_DISTANCE_DEBOUNCE_SIZE] = { 0 };
