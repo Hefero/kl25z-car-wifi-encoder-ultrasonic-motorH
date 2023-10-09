@@ -1,4 +1,11 @@
-# Bare Metal Blinky
+# PSI3422 - Laboratório de Sistemas Eletrônicos (2023)
+
+ESCOLA POLITÉCNICA DA UNIVERSIDADE DE SÃO PAULO
+DEPARTAMENTO DE ENGENHARIA DE SISTEMAS ELETRÔNICOS
+
+Prof. Gustavo Rehder
+
+FRDM-KL25z Automated Car with Wifi Control, Encoder and Ultrasonic sensor
 
 This guide reviews the steps required to get Blinky with Bare Metal working on an Mbed OS platform.
 
